@@ -1,0 +1,4 @@
+---
+:backends:
+  - module_data
+:merge_behavior: deeper

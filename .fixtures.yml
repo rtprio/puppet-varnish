@@ -1,0 +1,8 @@
+fixtures:
+  symlinks:
+    varnish: "#{source_dir}"
+  forge_modules:
+    stdlib: "puppetlabs/stdlib"
+    module_data:
+      repo: "ripienaar/module_data"
+      ref: '0.0.3'

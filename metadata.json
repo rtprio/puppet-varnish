@@ -1,0 +1,21 @@
+{
+  "name": "finalsite-varnish",
+  "version": "1.0.0",
+  "author": "Carl P. Corliss <carl.corliss@finalsite.com>",
+  "license": "MIT",
+  "summary": "Manages Varnish Service and Configuration",
+  "source": "https://github.com/finalsite/finalsite-varnish.git",
+  "project_page": "https://github.com/finalsite/finalsite-varnish",
+  "issues_url": "https://github.com/finalsite/finalsite-varnish/issues",
+  "tags": ["web", "varnish" ],
+
+  "operatingsystem_support": [
+    {"operatingsystem": "RedHat", "operatingsystemrelease": ["7"] },
+    {"operatingsystem": "CentOS", "operatingsystemrelease": ["7"] }
+  ],
+
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 4.7.0"},
+    {"name":"ripienaar/module_data","version_requirement":"0.0.3"},
+  ]
+}

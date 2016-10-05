@@ -1,0 +1,4 @@
+--fail-on-warnings
+--with-context
+--relative
+--no-80chars-check

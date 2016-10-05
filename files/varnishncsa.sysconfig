@@ -1,0 +1,6 @@
+<%-
+log_format = scope.function_hiera("varnish::config::ncsa_log_format", :default)
+-%>
+<%- unless log_format == :default -%>
+LOG_FORMAT=<%= log_format %>
+<%- end -%>

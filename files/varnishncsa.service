@@ -1,0 +1,11 @@
+[Service]
+User=varnishlog
+Group=varnish
+
+Type=forking
+RuntimeDirectory=varnishncsa
+PIDFile=/run/varnishncsa/varnishncsa.pid
+
+EnvironmentFile=-/etc/sysconfig/varnishncsa
+ExecStart=/usr/bin/varnishncsa -a -w /var/log/varnish/varnishncsa.log -D -P /run/varnishncsa.pid -F ${LOG_FORMAT}
+ExecReload=/bin/kill -HUP $MAINPID

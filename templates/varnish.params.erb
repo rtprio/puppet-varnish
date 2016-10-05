@@ -1,0 +1,65 @@
+<%-
+  param_options = scope.function_hiera_hash(["varnish::config::parameters", {}]).collect { |k,v|
+    "-p #{Shellwords.escape(k)}=#{Shellwords.escape(v)}"
+  }
+
+  runtime_options = scope.function_hiera_array(["varnish::config::runtime_options", []])
+  runtime_options = runtime_options.collect { |line|
+    # skip over invalid options
+    next unless line.strip =~ /^-[a-z]/i
+
+    option, setting = line.split(/\s+/, 2)
+    if setting.include? '='
+      key, value = setting.split(/\s*=\s*/, )
+      "#{option} #{Shellwords.escape(key)}=#{Shellwords.escape(value)}"
+    else
+      "#{option} #{Shellwords.escape(setting)}"
+    end
+  }.compact
+
+  daemon_options = runtime_options.concat(param_options)
+-%>
+###
+### This file created by Puppet; modification is futile, assimilation is inevitable.
+###
+
+# Varnish environment configuration description. This was derived from
+# the old style sysconfig/defaults settings
+
+# Set this to 1 to make systemd reload try to switch VCL without restart.
+RELOAD_VCL=1
+
+# Main configuration file. You probably want to change it.
+VARNISH_VCL_CONF=<%= @default_vcl %>
+
+# Default address and port to bind to. Blank address means all IPv4
+# and IPv6 interfaces, otherwise specify a host name, an IPv4 dotted
+# quad, or an IPv6 address in brackets.
+VARNISH_LISTEN_ADDRESS=<%= @listen_address %>
+VARNISH_LISTEN_PORT=<%= @listen_port %>
+
+# Admin interface listen address and port
+VARNISH_ADMIN_LISTEN_ADDRESS=<%= @admin_listen_address %>
+VARNISH_ADMIN_LISTEN_PORT=<%= @admin_listen_port %>
+
+# Shared secret file for admin interface
+VARNISH_SECRET_FILE=<%= @secret_file %>
+
+# Backend storage specification, see Storage Types in the varnishd(5)
+# man page for details.
+VARNISH_STORAGE=<%= @storage_specification %>
+
+# User and group for the varnishd worker processes
+
+# Other options, see the man page varnishd(1)
+<%- if daemon_options.empty? -%>
+#DAEMON_OPTS="-p thread_pool_min=5 -p thread_pool_max=500 -p thread_pool_timeout=300"
+<%- elsif daemon_options.size == 1 -%>
+DAEMON_OPTS="<%= daemon_options.first %>"
+<%- else -%>
+DAEMON_OPTS="<%= daemon_options.first %> \
+<%-   daemon_options[1..-2].each do |option_line| -%>
+             <%= option_line -%> \
+<%-   end -%>
+             <%= daemon_options.last %>"
+<%- end -%>
