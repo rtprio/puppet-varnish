@@ -74,7 +74,7 @@ or using hiera yaml files:
 ```yaml
 ---
 classes:
-  varnish
+  - varnish
 
 varnish::config::package_ensure: '4.1.3-1.el7'
 varnish::config::service_manage: false
