@@ -1,23 +1,11 @@
 <%-
-  param_options = scope.function_hiera_hash(["varnish::config::parameters", {}]).collect { |k,v|
-    "-p #{Shellwords.escape(k)}=#{Shellwords.escape(v)}"
-  }
+  require 'varnish_helper'
 
-  runtime_options = scope.function_hiera_array(["varnish::config::runtime_options", []])
-  runtime_options = runtime_options.collect { |line|
-    # skip over invalid options
-    next unless line.strip =~ /^-[a-z]/i
-
-    option, setting = line.split(/\s+/, 2)
-    if setting.include? '='
-      key, value = setting.split(/\s*=\s*/, )
-      "#{option} #{Shellwords.escape(key)}=#{Shellwords.escape(value)}"
-    else
-      "#{option} #{Shellwords.escape(setting)}"
-    end
-  }.compact
-
-  daemon_options = runtime_options.concat(param_options)
+  runtimes = (@runtime_options || []) | scope.function_hiera_array(['varnish::config::runtime_options', []]) |
+  params   = (@parameters || {}).deep_merge(
+    scope.function_hiera_hash(['varnish::config::parameters', {}])
+  ).collect { |k,v| "-p #{Shellwords.escape(k)}=#{Shellwords.escape(v)}" }
+  daemon_options = Varnish::RuntimeOptions.new(runtimes.concat(params))
 -%>
 ###
 ### This file created by Puppet; modification is futile, assimilation is inevitable.
@@ -49,11 +37,9 @@ VARNISH_SECRET_FILE=<%= @secret_file %>
 # man page for details.
 VARNISH_STORAGE=<%= @storage_specification %>
 
-# User and group for the varnishd worker processes
-
 # Other options, see the man page varnishd(1)
 <%- if daemon_options.empty? -%>
-#DAEMON_OPTS="-p thread_pool_min=5 -p thread_pool_max=500 -p thread_pool_timeout=300"
+#DAEMON_OPTS=""
 <%- elsif daemon_options.size == 1 -%>
 DAEMON_OPTS="<%= daemon_options.first %>"
 <%- else -%>

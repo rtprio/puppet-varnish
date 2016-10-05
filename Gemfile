@@ -23,7 +23,6 @@ group :test do
   gem 'puppet-lint',            '= 1.1.0'
   gem 'rspec-mocks',            '= 2.99.3'
   gem 'rspec-puppet',           '= 2.2.0'
-  gem 'rspec-system-puppet',    '= 2.2.1'
   gem 'puppetlabs_spec_helper', '= 0.8.2'
   gem 'metadata-json-lint',     '= 0.0.11'
   gem 'puppet-syntax',          '= 2.0.0'

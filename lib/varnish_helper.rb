@@ -15,7 +15,9 @@
 # AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 #
+require 'set'
 require 'puppet'
+require 'shellwords'
 
 module Varnish
   class Error < StandardError; end
@@ -24,6 +26,75 @@ module Varnish
   class InvalidStoragePath < InvalidStorageSpec; end
   class InvalidStorageType < InvalidStorageSpec; end
   class UnableToFindMountpoint < Error; end
+
+  class RuntimeOptions < Set
+    def [](value)
+      @hash.values[value]
+    end
+
+    def last
+      @hash.values.last
+    end
+
+    def first
+      @hash.values.first
+    end
+
+    def hashing_key(option)
+      return unless option
+      # use the flag only, if option is not a multi-option option
+      return option.strip.split(/\s+/).first if option.strip !~ /^-[pas]/
+      # otherwise, pass the stripped version of what came in
+      return option.strip
+    end
+    private :hashing_key
+
+    def escape(string)
+      return unless string
+      flag, option = string.strip.tr(%q."'., '').split(/\s+/, 2)
+      raise ArgumentError unless flag =~ /^-[a-z0-9]/i
+      return flag unless option
+      if option.include? '='
+        key, value = option.split(/\s*=\s*/, 2)
+        "#{flag} #{Shellwords.escape(key)}=#{Shellwords.escape(value)}"
+      else
+        "#{flag} #{Shellwords.escape(option)}"
+      end
+    end
+
+    def to_a
+      @hash.values
+    end
+
+    def each(&block)
+      block or return enum_for(__method__)
+      @hash.values.reject { |x| x.nil? || x.empty? }.each(&block)
+      self
+    end
+
+    def concat(*args)
+      args.flatten.each { |option| add(option) }
+      self
+    end
+
+    def add(option)
+      begin
+        @hash[hashing_key(option)] = escape(option)
+      rescue ArgumentError
+        # don't add the option if it doesn't meet requirements
+      end
+    self
+    end
+    alias << add
+
+    def delete(option)
+      super(hashing_key(option))
+    end
+
+    def include?(option)
+      super(hashing_key(option))
+    end
+  end
 
   class StorageSpec
     attr_reader :scope, :type, :size, :path, :granularity

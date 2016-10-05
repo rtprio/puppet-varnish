@@ -48,8 +48,8 @@ class varnish::config(
   $runtime_user         = undef,
   $default_ttl          = undef,
 
-  $parameters           = undef,
-  $runtime_options      = undef,
+  $parameters           = {},
+  $runtime_options      = [],
 ) {
   assert_private()
 

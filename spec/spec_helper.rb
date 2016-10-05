@@ -37,33 +37,95 @@ RSpec.configure do |c|
   }
 end
 
-def have_a_config_file
-  contain_file('/tmp/varnish.params')
+def assert_valid_parameter(key, value, &block)
+  assert_valid_config_param(
+    'parameters',
+    { key => value },
+    %Q.^(DAEMON_OPTS="|\\s*)-p #{Shellwords.escape(key)}=#{Shellwords.escape(value)}\\b.,
+    &block
+  )
 end
 
-def with_config_param(setting, value, &block)
-  context "with #{setting} => #{value}" do
+def assert_invalid_parameter(key, value, &block)
+  assert_invalid_config_param(
+    'parameters',
+    { key => value },
+    %Q.^(DAEMON_OPTS="|\\s*)-p #{Shellwords.escape(key)}=#{Shellwords.escape(value)}\\b.,
+    &block
+  )
+end
+
+def assert_exception_for_parameter(key, value, error, &block)
+  assert_exception_for_config_param('parameters', { key => value }, error, &block)
+end
+
+def assert_valid_runtime_option(value, &block)
+  assert_valid_config_param('runtime_options', [value], %Q.^(DAEMON_OPTS="|\\s*)#{value}\\b., &block)
+end
+
+def assert_invalid_runtime_option(value, &block)
+  assert_invalid_config_param('runtime_options', [value], %Q.^(DAEMON_OPTS="|\\s*)#{value}\\b., &block)
+end
+
+def assert_exception_for_runtime_option(value, error, &block)
+  assert_exception_for_config_param('runtime_options', [value], error, &block)
+end
+
+def assert_valid_storage_spec(input, output, &block)
+  assert_valid_config_param('storage_spec', input, %Q.VARNISH_STORAGE=#{output}., &block)
+end
+
+def assert_invalid_storage_spec(input, output, &block)
+  assert_invalid_config_param('storage_spec', input, %Q.VARNISH_STORAGE=#{output}., &block)
+end
+
+def assert_exception_for_storage_spec(input, error, &block)
+  assert_exception_for_config_param('storage_spec', input, error, &block)
+end
+
+def assert_valid_config_param(setting, value, test_expression, &block)
+  with_config_param(setting, value) do
+    it {
+      instance_eval(&block) if block_given?
+      should have_a_config_file.with_content(Regexp.new(test_expression))
+    }
+  end
+end
+
+def assert_invalid_config_param(setting, value, test_expression, &block)
+  with_config_param(setting, value) do
+    it {
+      instance_eval(&block) if block_given?
+      should_not have_a_config_file.with_content(Regexp.new(test_expression))
+    }
+  end
+end
+
+def assert_exception_for_config_param(setting, value, error, &block)
+  with_config_param(setting, value) do
+    it {
+      instance_eval(&block) if block_given?
+      expect(subject).to raise_error(error)
+    }
+  end
+end
+
+def have_a_config_file
+  contain_file('/tmp/varnish')
+end
+
+def with_config_params(settings, &block)
+  context "#{settings.inspect}" do
     let(:params) {{
       'config' => {
         'vcl_content' => 'return(pass);',
-        'params_path' => '/tmp/varnish.params'
-      }.merge({ setting => value })
+        'params_path' => '/tmp/varnish'
+      }.merge(settings)
     }}
-
     instance_eval(&block)
   end
 end
 
-def assert_storage_spec(input_spec, normalized_spec, inverted_expression:false)
-  with_config_param('storage_spec', input_spec) do
-    it {
-      if not inverted_expression
-        should have_a_config_file.
-               with_content(Regexp.new("^VARNISH_STORAGE=#{normalized_spec}$"))
-      else
-        should_not have_a_config_file.
-               with_content(Regexp.new("^VARNISH_STORAGE=#{normalized_spec}$"))
-      end
-    }
-  end
+def with_config_param(setting, value, &block)
+  with_config_params({setting => value}, &block)
 end

@@ -68,7 +68,7 @@ describe 'varnish', :type => :class do
     }
   end
 
-  describe "parameters" do
+  describe "with parameters" do
     let(:facts) do
       {
         memorysize_mb:     100.0 * 1024,
@@ -83,10 +83,21 @@ describe 'varnish', :type => :class do
       it { should contain_file('/tmp/varnish.params') }
     end
 
-    assert_storage_spec('malloc,10%', 'malloc,10g')
-    assert_storage_spec('file,/var/tmp,10%', 'file,/var/tmp,1g')
-    assert_storage_spec('persistent,/,10%', 'persistent,/,104858k')
-    assert_storage_spec('file,/var/tmp/data,10.532%,4096', 'file,/var/tmp/data,10785m,4k')
-    assert_storage_spec('file,/var/tmp/data,2048m', 'file,/var/tmp/data,2g')
+    assert_valid_parameter('pool_threads_min', 1)
+    assert_valid_parameter('pool_threads_max', 1)
+
+    assert_invalid_runtime_option('--foo')
+
+    assert_valid_runtime_option('-x 123') do
+      should have_a_config_file.with_content(/-j\s+/)
+      should have_a_config_file.with_content(/-t\s+\d+/)
+    end
+
+    assert_valid_storage_spec('malloc,10%', 'malloc,10g')
+    assert_valid_storage_spec('file,/var/tmp,10%', 'file,/var/tmp,1g')
+    assert_valid_storage_spec('persistent,/,10%', 'persistent,/,104858k')
+    assert_valid_storage_spec('file,/var/tmp/data,10.532%,4096', 'file,/var/tmp/data,10785m,4k')
+    assert_valid_storage_spec('file,/var/tmp/data,2048m', 'file,/var/tmp/data,2g')
+    assert_exception_for_storage_spec('file,var/tmp', Puppet::Error)
   end
 end
