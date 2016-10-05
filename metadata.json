@@ -4,9 +4,9 @@
   "author": "Carl P. Corliss <carl.corliss@finalsite.com>",
   "license": "MIT",
   "summary": "Manages Varnish Service and Configuration",
-  "source": "https://github.com/finalsite/finalsite-varnish.git",
-  "project_page": "https://github.com/finalsite/finalsite-varnish",
-  "issues_url": "https://github.com/finalsite/finalsite-varnish/issues",
+  "source": "https://github.com/finalsite/puppet-varnish.git",
+  "project_page": "https://github.com/finalsite/puppet-varnish",
+  "issues_url": "https://github.com/finalsite/puppet-varnish/issues",
   "tags": ["web", "varnish" ],
 
   "operatingsystem_support": [

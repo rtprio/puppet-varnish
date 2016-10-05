@@ -132,9 +132,9 @@ secret.
 |vcl_template|String|`undef`|Puppet template for VCL configuration (mutually exclusive with vcl_content and vcl_source)|
 |vcl_source|String|`undef`|Puppet source file for VCL configuration (mutually exclusive with vcl_content and vcl_template)|
 |runtime_user|String|`varnish`|User to run varnish as|
-|default_ttl|Integer|120|Default TTL to use for all cached objects|
-|parameters|Hash|`{"min_threads" => 5, "max_threads" => 500, "thread_timeout" => 300}|Various parameters to pass to varnish (see: [Runtime Parameters](https://www.varnish-cache.org/docs/4.1/reference/varnishd.html#run-time-parameters))|
-|runtime_options|Array|['-r cc_command,vcc_allow_inline_c,vmod_dir', '-t 120', '-j unix,user=varnish']|Runtime Options to pass to the varnish daemon on startup (see: [Runtime Options](https://www.varnish-cache.org/docs/4.1/reference/varnishd.html#options))|
+|default_ttl|Integer|`120`|Default TTL to use for all cached objects|
+|parameters|Hash|`{"min_threads" => 5, "max_threads" => 500, "thread_timeout" => 300}`|Various parameters to pass to varnish (see: [Runtime Parameters](https://www.varnish-cache.org/docs/4.1/reference/varnishd.html#run-time-parameters))|
+|runtime_options|Array|`['-r cc_command,vcc_allow_inline_c,vmod_dir', '-t 120', '-j unix,user=varnish']`|Runtime Options to pass to the varnish daemon on startup (see: [Runtime Options](https://www.varnish-cache.org/docs/4.1/reference/varnishd.html#options))|
 
 ## Limitations
 
