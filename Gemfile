@@ -18,21 +18,21 @@
 source 'https://rubygems.org'
 
 group :test do
-  gem 'rake'
-  gem 'deep_merge'
-  gem 'puppet-lint'
-  gem 'rspec-mocks'
-  gem 'rspec-puppet', '~> 2'
-  gem 'rspec-system-puppet'
-  gem 'puppetlabs_spec_helper'
-  gem 'metadata-json-lint'
-  gem 'puppet-syntax', '~> 2.0.0'
+  gem 'rake',                   '= 10.4.2'
+  gem 'deep_merge',             '= 1.0.1'
+  gem 'puppet-lint',            '= 1.1.0'
+  gem 'rspec-mocks',            '= 2.99.3'
+  gem 'rspec-puppet',           '= 2.2.0'
+  gem 'rspec-system-puppet',    '= 2.2.1'
+  gem 'puppetlabs_spec_helper', '= 0.8.2'
+  gem 'metadata-json-lint',     '= 0.0.11'
+  gem 'puppet-syntax',          '= 2.0.0'
   gem 'puppet', ENV['PUPPET_VERSION'] || '~> 3.7.0'
 end
 
 group :development do
-  gem 'travis'
-  gem 'travis-lint'
+  gem 'travis',      '= 1.7.5'
+  gem 'travis-lint', '= 2.0.0'
   gem 'puppet-blacksmith', :require => false
   gem 'rabbitt-githooks', '~> 1.6.0', :require => false
 end
