@@ -1,21 +1,38 @@
 {
   "name": "finalsite-varnish",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Carl P. Corliss <carl.corliss@finalsite.com>",
   "license": "MIT",
   "summary": "Manages Varnish Service and Configuration",
   "source": "https://github.com/finalsite/puppet-varnish.git",
   "project_page": "https://github.com/finalsite/puppet-varnish",
   "issues_url": "https://github.com/finalsite/puppet-varnish/issues",
-  "tags": ["web", "varnish" ],
-
-  "operatingsystem_support": [
-    {"operatingsystem": "RedHat", "operatingsystemrelease": ["7"] },
-    {"operatingsystem": "CentOS", "operatingsystemrelease": ["7"] }
+  "tags": [
+    "web",
+    "varnish"
   ],
-
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    }
+  ],
   "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 4.7.0"},
-    {"name":"ripienaar/module_data","version_requirement":"0.0.3"}
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 4.7.0"
+    },
+    {
+      "name": "ripienaar/module_data",
+      "version_requirement": "0.0.3"
+    }
   ]
 }
