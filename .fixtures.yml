@@ -2,7 +2,9 @@ fixtures:
   symlinks:
     varnish: "#{source_dir}"
   forge_modules:
-    stdlib: "puppetlabs/stdlib"
+    stdlib:
+      repo: "puppetlabs/stdlib"
+      ref: '4.9.0'
     module_data:
       repo: "ripienaar/module_data"
       ref: '0.0.3'

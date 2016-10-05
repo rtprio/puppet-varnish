@@ -1,7 +1,6 @@
 # Varnish
 
-[![build
-Status](https://travis-ci.org/finalsite/finalsite-varnish.png?branch=master)](https://travis-ci.org/finalsite/finalsite-varnish)
+[![build Status](https://travis-ci.org/finalsite/puppet-varnish.png?branch=master)](https://travis-ci.org/finalsite/puppet-varnish)
 
 #### Table of Contents
 
