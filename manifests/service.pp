@@ -45,6 +45,21 @@ class varnish::service(
         "Invalid service_enable '${service_enable}'; expected a boolean value, or one of manual, mask")
     }
 
+    file { '/etc/systemd/system/varnish.service':
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      content => template('varnish/varnish.service.erb'),
+    }
+
+    exec { 'systemctl_reload_varnish_service':
+      command     => '/bin/systemctl daemon-reload',
+      refreshonly => true,
+      subscribe   => File['/etc/systemd/system/varnish.service'],
+      notify      => Service['varnish'],
+      before      => Service['varnish']
+    }
+
     service {'varnish':
       ensure    => pick($service_ensure, 'running'),
       enable    => pick($service_enable, true),
@@ -52,6 +67,14 @@ class varnish::service(
         File[$::varnish::config::params_path],
         File[$::varnish::config::vcl_config_file]
       ],
+      require   => File['/etc/systemd/system/varnish.service']
+    }
+
+    file { '/etc/sysconfig/varnishncsa':
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      content => template('varnish/varnishncsa.sysconfig.erb')
     }
 
     file { '/etc/systemd/system/varnishncsa.service':
@@ -61,18 +84,29 @@ class varnish::service(
       source => 'puppet:///modules/varnish/varnishncsa.service'
     }
 
-    file { '/etc/sysconfig/varnishncsa':
-      owner  => root,
-      group  => root,
-      mode   => '0644',
-      source => 'puppet:///modules/varnish/varnishncsa.sysconfig'
+    file { '/var/log/varnish':
+      ensure => 'directory',
+      owner  => 'varnishlog',
+      group  => 'varnish',
+      mode   => '1775',
+    }
+
+    exec { 'systemctl_reload_varnishncsa_service':
+      command     => '/bin/systemctl daemon-reload',
+      refreshonly => true,
+      subscribe   => File['/etc/systemd/system/varnishncsa.service'],
+      notify      => Service['varnishncsa'],
+      before      => Service['varnishncsa']
     }
 
     service { 'varnishncsa':
       ensure    => pick($service_ensure, 'running'),
       enable    => pick($service_enable, true),
       subscribe => File['/etc/sysconfig/varnishncsa'],
-      require   => File['/etc/systemd/system/varnishncsa.service'],
+      require   => [
+        File['/var/log/varnish'],
+        File['/etc/systemd/system/varnishncsa.service'],
+      ],
     }
   }
 }

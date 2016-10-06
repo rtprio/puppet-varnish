@@ -17,6 +17,7 @@
 #
 require 'pathname'
 require 'puppetlabs_spec_helper/module_spec_helper'
+require 'rspec-puppet-utils'
 require 'fixtures/modules/module_data/lib/hiera/backend/module_data_backend.rb'
 
 fixture_path = Pathname.new(File.expand_path(File.join(__FILE__, '..', 'fixtures')))

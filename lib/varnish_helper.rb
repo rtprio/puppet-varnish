@@ -29,15 +29,15 @@ module Varnish
 
   class RuntimeOptions < Set
     def [](value)
-      @hash.values[value]
+      to_a[value]
     end
 
     def last
-      @hash.values.last
+      to_a.last
     end
 
     def first
-      @hash.values.first
+      to_a.first
     end
 
     def hashing_key(option)
@@ -63,12 +63,21 @@ module Varnish
     end
 
     def to_a
-      @hash.values
+      @hash.values.sort { |a,b|
+        # ensure -j (jail) is always the first option in the list
+        if a.start_with? '-j'
+          next -1
+        elsif b.start_with? '-j'
+          next 1
+        else
+          next (a <=> b)
+        end
+      }
     end
 
     def each(&block)
       block or return enum_for(__method__)
-      @hash.values.reject { |x| x.nil? || x.empty? }.each(&block)
+      to_a.reject { |x| x.nil? || x.empty? }.each(&block)
       self
     end
 
@@ -174,7 +183,7 @@ module Varnish
       'g' => 1024 ** 3,
       't' => 1024 ** 4,
       'p' => 1024 ** 5,
-    })
+    }).freeze unless defined? MODIFIER_MAP
 
     attr_reader :size, :modifier, :capacity
     private :size, :modifier, :capacity

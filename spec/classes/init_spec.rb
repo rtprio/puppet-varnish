@@ -88,9 +88,34 @@ describe 'varnish', :type => :class do
 
     assert_invalid_runtime_option('--foo')
 
-    assert_valid_runtime_option('-x 123') do
-      should have_a_config_file.with_content(/-j\s+/)
-      should have_a_config_file.with_content(/-t\s+\d+/)
+    with_config_params({'runtime_options' => ['-x abc', '-a 123', '-b xyz'] }) do
+      it { should have_a_config_file.with_content(/^DAEMON_OPTS="-a 123\b/) }
+      it { should have_a_config_file.with_content(/^\s+-x abc/) }
+      it { should have_a_config_file.with_content(/^\s+-b xyz/) }
+    end
+
+    assert_valid_runtime_option('-x 123')
+
+    assert_exception_for_config_param('vcl_config_file', 'bad-data', Puppet::Error)
+    assert_valid_config_param('vcl_config_file', '/tmp/testfile', '^VARNISH_VCL_CONF=/tmp/testfile') do
+      should contain_file('/tmp/testfile')
+    end
+
+    assert_valid_config_param('listen_address', '0.0.0.0', '^VARNISH_LISTEN_ADDRESS=0.0.0.0')
+    assert_exception_for_config_param('listen_address', 'bad-data', Puppet::Error)
+
+    assert_valid_config_param('listen_port', '1234', '^VARNISH_LISTEN_PORT=1234')
+    assert_exception_for_config_param('listen_port', 'bad-data', Puppet::Error)
+
+    assert_valid_config_param('admin_listen_address', '0.0.0.0', '^VARNISH_ADMIN_LISTEN_ADDRESS=0.0.0.0')
+    assert_exception_for_config_param('admin_listen_address', 'bad-data', Puppet::Error)
+
+    assert_valid_config_param('admin_listen_port', '1234', '^VARNISH_ADMIN_LISTEN_PORT=1234')
+    assert_exception_for_config_param('admin_listen_port', 'bad-data', Puppet::Error)
+
+    assert_exception_for_config_param('secret_file', 'bad-data', Puppet::Error)
+    assert_valid_config_param('secret_file', '/tmp/testfile', '^VARNISH_SECRET_FILE=/tmp/testfile') do
+      should contain_file('/tmp/testfile')
     end
 
     assert_valid_storage_spec('malloc,10%', 'malloc,10g')

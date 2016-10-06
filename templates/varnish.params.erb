@@ -5,7 +5,7 @@
   params   = (@parameters || {}).deep_merge(
     scope.function_hiera_hash(['varnish::config::parameters', {}])
   ).collect { |k,v| "-p #{Shellwords.escape(k)}=#{Shellwords.escape(v)}" }
-  daemon_options = Varnish::RuntimeOptions.new(runtimes.concat(params))
+  daemon_options = Varnish::RuntimeOptions.new(runtimes.concat(params).reject { |x| x.start_with? '-j' })
 -%>
 ###
 ### This file created by Puppet; modification is futile, assimilation is inevitable.
@@ -18,7 +18,7 @@
 RELOAD_VCL=1
 
 # Main configuration file. You probably want to change it.
-VARNISH_VCL_CONF=<%= @default_vcl %>
+VARNISH_VCL_CONF=<%= @vcl_config_file %>
 
 # Default address and port to bind to. Blank address means all IPv4
 # and IPv6 interfaces, otherwise specify a host name, an IPv4 dotted

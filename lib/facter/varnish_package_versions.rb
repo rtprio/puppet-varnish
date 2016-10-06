@@ -20,26 +20,37 @@ require 'shellwords'
 require 'ostruct'
 
 module Varnish
-  module MountPoints
+  module PackageVersions
     extend self
-    def get
-      mount_points  = Facter::Util::Resolution.exec('/bin/mount -l -t xfs,ext2,ext3,ext4,btrfs,reiser4,zfs')
-      @mount_points = mount_points.lines.each_with_object({}) { |line,hash|
-        next unless results = line.match(/^(?<device>\S+)\s+on\s+(?<mountpoint>\S+)/)
-        device, mountpoint = results.captures
-        hash[device] = OpenStruct.new(
-          basename: "mountpoint" << device.tr('/-', '_'),
-          mountpoint: mountpoint,
-          size: Facter::Util::Resolution.exec("blockdev --getsize64 #{Shellwords.escape(device)}")
+
+    def installed
+      result = %x( /bin/yum list installed systemd varnish{,-{mib,modules}} --quiet --color=no 2>&1 | grep x86_64 ).strip
+      result.lines.each_with_object({}) { |line, hash|
+        name, version = line.split(/\s+/)[0..1]
+        hash[name.split('.').first] = OpenStruct.new(
+          version: version.split('-').first,
+          safename: name.split('.').first.gsub(/[\W-]/, '_')
         )
-      }.freeze
-    rescue
-      {}
+      }
     end
-  end unless defined? MountPoints
+
+    def available
+      result = %x( /bin/yum list available varnish{,-{mib,modules}} --quiet --color=no 2>&1 | grep x86_64 ).strip
+      result.lines.each_with_object({}) { |line, hash|
+        name, version = line.split(/\s+/)[0..1]
+        hash[name.split('.').first] = OpenStruct.new(
+          version: version.split('-').first,
+          safename: name.split('.').first.gsub(/[\W-]/, '_')
+        )
+      }
+    end
+  end unless defined? PackageVersions
 end
 
-Varnish::MountPoints.get.each do |device, data|
-  Facter.add("#{data.basename}_path") { setcode { data.mountpoint } }
-  Facter.add("#{data.basename}_size") { setcode { data.size } }
+Varnish::PackageVersions.installed.each do |package, data|
+  Facter.add("installed_package_#{data.safename}") { setcode { data.version } }
+end
+
+Varnish::PackageVersions.available.each do |package, data|
+  Facter.add("available_package_#{data.safename}") { setcode { data.version } }
 end

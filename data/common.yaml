@@ -23,8 +23,3 @@ varnish::config::max_threads: 1000
 
 varnish::config::default_ttl: 120
 varnish::config::storage_spec: malloc
-
-varnish::config::runtime_options:
-  - '-r cc_command,vcc_allow_inline_c,vmod_dir'
-  - '-t %{varnish::config::default_ttl}'
-  - '-j unix,user=%{varnish::config::runtime_user}'

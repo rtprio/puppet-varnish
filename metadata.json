@@ -1,6 +1,6 @@
 {
   "name": "finalsite-varnish",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Carl P. Corliss <carl.corliss@finalsite.com>",
   "license": "MIT",
   "summary": "Manages Varnish Service and Configuration",

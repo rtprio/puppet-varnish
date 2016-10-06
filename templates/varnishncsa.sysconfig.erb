@@ -1,0 +1,6 @@
+<%- log_format = scope.function_hiera(["varnish::config::ncsa_log_format", :default]) -%>
+<%- if log_format == :default -%>
+LOG_FORMAT="%{Host}i %{X-Real-IP}i %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\" response_msec:%D firstbyte:%{Varnish:time_firstbyte}x handling:%{Varnish:handling}x cache:%{Varnish:hitmiss}x grace:%{X-Grace}o"
+<%- else -%>
+LOG_FORMAT=<%= log_format %>
+<%- end -%>

@@ -24,14 +24,61 @@ describe 'varnish::service', :type => :class do
 
   describe "with service_manage => true" do
     let(:pre_condition) { ['include ::varnish::config'] }
-    before(:each) { Puppet::Parser::Functions.newfunction(:assert_private) { |args| true } }
+    let(:scope) { PuppetlabsSpec::PuppetInternals.scope }
+
+    before(:each) {
+      allow(scope).to receive(:lookupvar).with('::installed_package_systemd').and_return('228')
+      allow(scope).to receive(:lookupvar).with('::varnish::config::runtime_user').and_return('varnish')
+      allow(scope).to receive(:lookupvar).with('::varnish::config::default_ttl').and_return(120)
+      Puppet::Parser::Functions.newfunction(:assert_private) { |args| true }
+    }
+
+    it {
+      should contain_file('/etc/systemd/system/varnish.service').
+             with({owner: 'root', group: 'root', mode: '0644'})
+    }
+
+    describe "varnish.service template" do
+      let(:harness) { TemplateHarness.new('templates/varnish.service.erb', scope) }
+
+      context "with non-empty settings" do
+        it { result = harness.run; expect(result).to match(/^TasksMax=infinity/) }
+        it { result = harness.run; expect(result).to match(/^\s+-j unix,user=varnish/) }
+        it { result = harness.run; expect(result).to match(/^\s+-t 120/) }
+      end
+
+      context "with empty settings" do
+        it {
+          allow(scope).to receive(:lookupvar).with('::installed_package_systemd').and_return(nil)
+          result = harness.run; expect(result).to match(/^#TasksMax=infinity/)
+        }
+        it {
+          allow(scope).to receive(:lookupvar).with('::varnish::config::runtime_user').and_return(nil)
+          result = harness.run; expect(result).to_not match(/^\s+-j\s+/)
+        }
+        it {
+          allow(scope).to receive(:lookupvar).with('::varnish::config::default_ttl').and_return(nil)
+          result = harness.run; expect(result).to_not match(/^\s+-t\s+/)
+        }
+      end
+    end
+
+    it {
+      should contain_exec('systemctl_reload_varnish_service').
+             with_command('/bin/systemctl daemon-reload').
+             with_refreshonly(true).
+             that_subscribes_to('File[/etc/systemd/system/varnish.service]').
+             that_notifies('Service[varnish]').
+             that_comes_before('Service[varnish]')
+    }
 
     it {
       should contain_service('varnish').
              with_ensure('running').
              with_enable(true).
              that_subscribes_to('File[/etc/varnish/varnish.params]').
-             that_subscribes_to('File[/etc/varnish/default.vcl]')
+             that_subscribes_to('File[/etc/varnish/default.vcl]').
+             that_requires('File[/etc/systemd/system/varnish.service]')
     }
     it {
       should contain_file('/etc/systemd/system/varnishncsa.service').
@@ -42,7 +89,21 @@ describe 'varnish::service', :type => :class do
     it {
       should contain_file('/etc/sysconfig/varnishncsa').
              with({owner: 'root', group: 'root', mode: '0644'}).
-             with_source('puppet:///modules/varnish/varnishncsa.sysconfig')
+             with_content(/^LOG_FORMAT="%\{Host\}i .+ grace:%\{X-Grace\}o"/)
+    }
+
+    it {
+      should contain_file('/var/log/varnish').
+             with({owner: 'varnishlog', group: 'varnish', mode: '1775', ensure: 'directory'})
+    }
+
+    it {
+      should contain_exec('systemctl_reload_varnishncsa_service').
+             with_command('/bin/systemctl daemon-reload').
+             with_refreshonly(true).
+             that_subscribes_to('File[/etc/systemd/system/varnishncsa.service]').
+             that_notifies('Service[varnishncsa]').
+             that_comes_before('Service[varnishncsa]')
     }
 
     it {
@@ -50,7 +111,8 @@ describe 'varnish::service', :type => :class do
              with_ensure('running').
              with_enable(true).
              that_subscribes_to('File[/etc/sysconfig/varnishncsa]').
-             that_requires('File[/etc/systemd/system/varnishncsa.service]')
+             that_requires('File[/etc/systemd/system/varnishncsa.service]').
+             that_requires('File[/var/log/varnish]')
     }
 
     context "with other parameter" do
