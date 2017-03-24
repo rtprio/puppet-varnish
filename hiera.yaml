@@ -5,5 +5,4 @@ defaults:
   data_hash: yaml_data
 hierarchy:
   - name: "common"
-    backend: yaml
-    path: common
+    path: "common.yaml"
