@@ -15,7 +15,7 @@
 # AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 # OR OTHER DEALINGS IN THE SOFTWARE.
 #
-require File.expand_path('../../../../varnish_helper', __FILE__)
+require File.expand_path('../../../../puppet_x/finalsite/varnish_helper', __FILE__)
 
 module Puppet::Parser::Functions
   newfunction(:normalize_storage_spec, type: :rvalue, doc: <<-'ENDHEREDOC') do |args|
